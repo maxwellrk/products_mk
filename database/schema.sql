@@ -1,3 +1,7 @@
+CREATE DATABASE IF NOT EXISTS 'product_db';
+
+USE 'product_db';
+
 DROP TABLE IF EXISTS `Product`;
 		
 CREATE TABLE `Product` (
