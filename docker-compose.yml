@@ -8,6 +8,8 @@ services:
       - db
     ports:
       - 3000:3000
+    volumes:
+      - schema:/app/database
   db:
     image: mariadb
     restart: always
@@ -15,3 +17,8 @@ services:
       MYSQL_ROOT_PASSWORD: examplepass
     ports:
       - 3306:3306
+    volumes:
+      - schema:/schema
+
+volumes:
+  schema:
