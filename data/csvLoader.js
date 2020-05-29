@@ -3,15 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const mariadb = require('mariadb');
 
-const streamBuilder = (csvName, query) => {
-  // const locationOfCsv = path.resolve(
-  //   __dirname,
-  //   '../data/formatted',
-  //   `${csvName}.csv`
-  // );
-
-  const readStream = fs.createReadStream(locationOfCsv);
-
+const loadCsv = (query) => {
   mariadb
     .createConnection({
       host: 'localhost',
@@ -22,48 +14,85 @@ const streamBuilder = (csvName, query) => {
       permitLocalInfile: true,
     })
     .then((conn) => {
-      // readStream
-      //   .pipe(csv())
-      //   .on('data', (data) => {
-      //     conn.query(query, data);
-      //   })
-      //   .on('error', (err) => console.log(err))
-      //   .on('end', (end) => console.log('thisisend', end));
-
-      conn.query(query);
+      return conn.query(query);
+    })
+    .catch((err) => {
+      console.log('this is the error', err);
     });
 };
 
-const locationOfCsv = () => {
-  path.resolve(__dirname, '../data/formatted', `product.csv`);
+const locationOfCsv = (productName) => {
+  return path.resolve(__dirname, '../data/formatted', `${productName}.csv`);
 };
 
-streamBuilder(
-  null,
-  `LOAD DATA LOCAL INFILE '${locationOfCsv}' INTO TABLE Product FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
+// loadCsv(
+//   `LOAD DATA LOCAL INFILE '${locationOfCsv(
+//     'product'
+//   )}' INTO TABLE Product FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
+// );
+
+// loadCsv(
+//   `LOAD DATA LOCAL INFILE '${locationOfCsv(
+//     'styles'
+//   )}' INTO TABLE Styles FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
+// );
+
+// loadCsv(
+//   `LOAD DATA LOCAL INFILE '${locationOfCsv(
+//     'features'
+//   )}' INTO TABLE Features FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
+// );
+
+// loadCsv(
+//   `LOAD DATA LOCAL INFILE '${locationOfCsv(
+//     'related'
+//   )}' INTO TABLE Related_Products FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
+// );
+
+// loadCsv(
+//   `LOAD DATA LOCAL INFILE '${locationOfCsv(
+//     'skus'
+//   )}' INTO TABLE Skus FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
+// );
+
+// loadCsv(
+//   `LOAD DATA LOCAL INFILE '${locationOfCsv(
+//     'photos_1'
+//   )}' INTO TABLE Photos FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
+// );
+
+// loadCsv(
+//   `LOAD DATA LOCAL INFILE '${locationOfCsv(
+//     'photos_2'
+//   )}' INTO TABLE Photos FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
+// );
+
+// loadCsv(
+//   `LOAD DATA LOCAL INFILE '${locationOfCsv(
+//     'photos_3'
+//   )}' INTO TABLE Photos FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
+// );
+
+loadCsv(
+  `LOAD DATA LOCAL INFILE '${locationOfCsv(
+    'photos_4'
+  )}' INTO TABLE Photos FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
 );
 
-// streamBuilder(
-//   'product',
-//   'INSERT INTO Product (product_id, name, slogan, description, category, default_price) VALUES (?, ?, ?, ?, ?, ?)'
+// loadCsv(
+//   `LOAD DATA LOCAL INFILE '${locationOfCsv(
+//     'photos_5'
+//   )}' INTO TABLE Photos FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
 // );
-// streamBuilder(
-//   'styles',
-//   'INSERT INTO Styles (style_id, product_id, name, sale_price, original_price, default_status) VALUES (?, ?, ?, ?, ?, ?)'
+
+// loadCsv(
+//   `LOAD DATA LOCAL INFILE '${locationOfCsv(
+//     'photos_6'
+//   )}' INTO TABLE Photos FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
 // );
-// streamBuilder(
-//   'related',
-//   'INSERT INTO Related_Products (null, main_id, related_id) VALUES (?, ?, ?)'
-// );
-// streamBuilder(
-//   'features',
-//   'INSERT INTO Features (id, product_id, feature, value) VALUES (?, ?, ?, ?)'
-// );
-// streamBuilder(
-//   'skus',
-//   'INSERT INTO Skus (skus_id, style_id, size, quantity) VALUES (?, ?, ?, ?)'
-// );
-// streamBuilder(
-//   'photos',
-//   'INSERT INTO Photos (photo_id, style_id, url, thumb_url) VALUES (?, ?, ?, ?)'
+
+// loadCsv(
+//   `LOAD DATA LOCAL INFILE '${locationOfCsv(
+//     'photos_1'
+//   )}' INTO TABLE Photos FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
 // );
