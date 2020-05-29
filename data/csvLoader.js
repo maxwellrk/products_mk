@@ -4,43 +4,66 @@ const fs = require('fs');
 const mariadb = require('mariadb');
 
 const streamBuilder = (csvName, query) => {
-  const stream = fs.createReadStream(
-    path.resolve(__dirname, '../data/unformatted', `${csvName}.csv`)
-  );
+  // const locationOfCsv = path.resolve(
+  //   __dirname,
+  //   '../data/formatted',
+  //   `${csvName}.csv`
+  // );
 
-  csvData = [];
+  const readStream = fs.createReadStream(locationOfCsv);
 
-  const csvStream = csv
-    .parse()
-    .on('data', (data) => {
-      csvData.push(data);
+  mariadb
+    .createConnection({
+      host: 'localhost',
+      user: 'root',
+      password: 'examplepass',
+      database: 'product_db',
+      port: 3306,
+      permitLocalInfile: true,
     })
-    .on('error', (err) => console.log(err))
-    .on('end', (end) => csvData.shift());
-
-  const pool = mariadb.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'examplepass',
-    database: 'product_db',
-    port: 3306,
-  });
-
-  pool
-    .getConnection()
     .then((conn) => {
-      console.log(csvData);
-      return conn.batch(query, [csvData]);
-    })
-    .then((resp) => console.log(resp))
-    .catch((err) => {
-      console.log('pool connection error', err);
-    });
+      // readStream
+      //   .pipe(csv())
+      //   .on('data', (data) => {
+      //     conn.query(query, data);
+      //   })
+      //   .on('error', (err) => console.log(err))
+      //   .on('end', (end) => console.log('thisisend', end));
 
-  stream.pipe(csvStream);
+      conn.query(query);
+    });
+};
+
+const locationOfCsv = () => {
+  path.resolve(__dirname, '../data/formatted', `product.csv`);
 };
 
 streamBuilder(
-  'test',
-  'INSERT INTO Product (product_id, name, slogan, description, category, default_price) VALUES (?, ?, ?, ?, ?, ?)'
+  null,
+  `LOAD DATA LOCAL INFILE '${locationOfCsv}' INTO TABLE Product FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n'`
 );
+
+// streamBuilder(
+//   'product',
+//   'INSERT INTO Product (product_id, name, slogan, description, category, default_price) VALUES (?, ?, ?, ?, ?, ?)'
+// );
+// streamBuilder(
+//   'styles',
+//   'INSERT INTO Styles (style_id, product_id, name, sale_price, original_price, default_status) VALUES (?, ?, ?, ?, ?, ?)'
+// );
+// streamBuilder(
+//   'related',
+//   'INSERT INTO Related_Products (null, main_id, related_id) VALUES (?, ?, ?)'
+// );
+// streamBuilder(
+//   'features',
+//   'INSERT INTO Features (id, product_id, feature, value) VALUES (?, ?, ?, ?)'
+// );
+// streamBuilder(
+//   'skus',
+//   'INSERT INTO Skus (skus_id, style_id, size, quantity) VALUES (?, ?, ?, ?)'
+// );
+// streamBuilder(
+//   'photos',
+//   'INSERT INTO Photos (photo_id, style_id, url, thumb_url) VALUES (?, ?, ?, ?)'
+// );
