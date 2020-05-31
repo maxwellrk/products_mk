@@ -22,13 +22,10 @@ csvCleaner = (csvName) => {
             ? data[key].replace(/\D+/g, '')
             : data[key].trim();
       } else if (csvName === 'styles') {
-        cleanData[key] = data[key] === 'null' ? 'NULL' : data[key];
+        cleanData[key] = data[key] === 'null' ? '0' : data[key];
       } else if (csvName === 'features') {
         if (key === 'value') {
-          cleanData[key] =
-            data[key] === 'null'
-              ? 'NULL'
-              : data[key].replace(/([a-z])([A-Z])/g, '$1 $2');
+          cleanData[key] = data[key].replace(/([a-z])([A-Z])/g, '$1 $2');
         } else {
           cleanData[key] = data[key];
         }
@@ -50,4 +47,4 @@ csvCleaner = (csvName) => {
 // csvCleaner('features');
 // csvCleaner('photos');
 // csvCleaner('related');
-csvCleaner('skus');
+// csvCleaner('skus');
