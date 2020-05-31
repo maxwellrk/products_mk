@@ -34,13 +34,6 @@ app.get('/products/list', (req, res) => {
     });
 });
 
-// `product_id` INT NOT NULL AUTO_INCREMENT,
-//   `name` VARCHAR(100) NULL DEFAULT NULL,
-//   `slogan` VARCHAR(400) NULL DEFAULT NULL,
-//   `description` VARCHAR(600) NULL DEFAULT NULL,
-//   `category` VARCHAR(50) NULL DEFAULT NULL,
-//   `default_price` INT NULL DEFAULT NULL,
-
 app.get('/products/:product_id', (req, res) => {
   pool
     .getConnection()
@@ -62,6 +55,90 @@ app.get('/products/:product_id', (req, res) => {
     })
     .then((info) => res.send(info))
     .catch((err) => {
+      res.sendStatus(500);
+    });
+});
+
+app.get('/products/:product_id/related', (req, res) => {
+  pool
+    .getConnection()
+    .then((conn) => {
+      return conn.query(
+        `SELECT related_id FROM Related_Products WHERE main_id = ${req.params.product_id}`
+      );
+    })
+    .then((info) => {
+      res.send(info.map((ele) => ele.related_id));
+    })
+    .catch((err) => {
+      res.send(500);
+    });
+});
+
+app.get('/products/:product_id/styles', (req, res) => {
+  pool
+    .getConnection()
+    .then((conn) => {
+      return conn
+        .query(
+          `SELECT style_id, name, sale_price, original_price, default_status AS 'default?' FROM Styles WHERE Styles.product_id = ${req.params.product_id}`
+        )
+        .then((info) => {
+          let queryParams = '';
+          const positionOfStyles = {};
+          info.forEach((ele, index) => {
+            positionOfStyles[ele.style_id] = index;
+            index === 0
+              ? (queryParams += `p.style_id = ${ele.style_id}`)
+              : (queryParams += ` or p.style_id = ${ele.style_id}`);
+          });
+
+          return conn
+            .query(
+              `SELECT style_id, thumb_url as thumbnail_url, url FROM Photos p WHERE ${queryParams}`
+            )
+            .then((photos) => {
+              return conn
+                .query(
+                  `SELECT style_id, size, quantity FROM Skus p WHERE ${queryParams}`
+                )
+                .then((skus) => {
+                  const returnObj = {};
+
+                  returnObj.product_id = req.params.product_id;
+
+                  returnObj.results = info;
+
+                  photos.forEach((ele) => {
+                    returnObj.results[positionOfStyles[ele.style_id]].photos ===
+                    undefined
+                      ? (returnObj.results[
+                          positionOfStyles[ele.style_id]
+                        ].photos = [ele])
+                      : returnObj.results[
+                          positionOfStyles[ele.style_id]
+                        ].photos.push(ele);
+                  });
+
+                  skus.forEach((ele) => {
+                    returnObj.results[positionOfStyles[ele.style_id]].skus ===
+                    undefined
+                      ? (returnObj.results[
+                          positionOfStyles[ele.style_id]
+                        ].skus = { [ele.size]: ele.quantity })
+                      : (returnObj.results[positionOfStyles[ele.style_id]].skus[
+                          ele.size
+                        ] = ele.quantity);
+                  });
+                  return returnObj;
+                });
+            });
+        });
+    })
+
+    .then((info) => res.send(info))
+    .catch((err) => {
+      console.log(err);
       res.sendStatus(500);
     });
 });
