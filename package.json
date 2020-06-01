@@ -15,5 +15,12 @@
   "bugs": {
     "url": "https://github.com/Chares-HRNYC29/products_mk/issues"
   },
-  "homepage": "https://github.com/Chares-HRNYC29/products_mk#readme"
+  "homepage": "https://github.com/Chares-HRNYC29/products_mk#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "csv-parser": "^2.3.2",
+    "csv-string": "^4.0.1",
+    "express": "^4.17.1",
+    "mariadb": "^2.4.0"
+  }
 }
