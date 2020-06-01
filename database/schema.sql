@@ -10,7 +10,7 @@ CREATE TABLE `Product` (
   `slogan` VARCHAR(400) NULL DEFAULT NULL,
   `description` VARCHAR(600) NULL DEFAULT NULL,
   `category` VARCHAR(50) NULL DEFAULT NULL,
-  `default_price` INT NULL DEFAULT NULL,
+  `default_price` VARCHAR(20) NULL DEFAULT NULL,
   PRIMARY KEY (`product_id`)
 );
 
@@ -20,9 +20,9 @@ CREATE TABLE `Styles` (
   `style_id` INT NOT NULL AUTO_INCREMENT,
   `product_id` INT NULL DEFAULT NULL,
   `name` VARCHAR(200) NULL DEFAULT NULL,
-  `sale_price` INT NULL DEFAULT NULL,
-  `original_price` INT NULL DEFAULT NULL,
-  `default?` INT NULL DEFAULT NULL,
+  `sale_price` VARCHAR(20) NULL DEFAULT NULL,
+  `original_price` VARCHAR(20) NULL DEFAULT NULL,
+  `default_status` INT NULL DEFAULT NULL,
   PRIMARY KEY (`style_id`)
 );
 
