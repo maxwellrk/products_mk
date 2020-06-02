@@ -48,7 +48,7 @@ module.exports = {
               )
               .then((features) => {
                 product[0].features = features;
-                return product;
+                return product[0];
               });
           })
           .then((info) => {
