@@ -1,0 +1,12 @@
+config:
+  target: 'http://localhost:43443'
+  phases:
+    - duration: 10
+      arrivalRate: 100
+  processor: './helperFunctions.js'
+scenarios:
+  - name: 'Search Id'
+    flow:
+      - function: 'generateRandomData'
+      - get:
+          url: '/products/{{id}}/styles'
