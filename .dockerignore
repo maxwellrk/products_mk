@@ -1,0 +1,7 @@
+/data
+/node_modules
+.package-lock.json
+/coverage
+/tests
+.gitignore
+README.md

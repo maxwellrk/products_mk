@@ -1,1 +1,7 @@
 .env
+/node_modules
+/data/formatted
+/data/unformatted
+/tests
+/stress-test
+/coverage
