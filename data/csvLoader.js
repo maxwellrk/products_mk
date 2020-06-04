@@ -1,12 +1,13 @@
 const path = require('path');
 const mariadb = require('mariadb');
+require('dotenv').config();
 
 const loadCsv = (query) => {
   return mariadb
     .createConnection({
-      host: 'db',
+      host: 'localhost',
       user: 'root',
-      password: 'examplepass',
+      password: process.env.DBPASS,
       database: 'product_db',
       port: 3306,
       permitLocalInfile: true,
