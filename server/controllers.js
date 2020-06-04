@@ -3,7 +3,8 @@ const mariadb = require('mariadb');
 const pool = mariadb.createPool({
   host: 'localhost',
   user: 'root',
-  password: 'examplepass',
+  password: process.env.DBPASS,
+  port: '3306',
   database: 'product_db',
 });
 
@@ -13,54 +14,51 @@ module.exports = {
 
     const count = req.query.count || 5;
 
-    pool
-      .getConnection()
-      .then((conn) => {
-        return conn
-          .query(
-            `SELECT product_id AS id, name, slogan, description, category, default_price From Product where product_id >= ${
-              count * page - count + 1
-            } and Product_id <= ${count * page};`
-          )
-          .then((info) => {
-            res.send(info);
-            conn.end();
-          });
-      })
-      .catch((err) => {
-        console.log(err);
-        res.sendStatus(500);
-      });
+    pool.getConnection().then((conn) => {
+      return conn
+        .query(
+          `SELECT product_id AS id, name, slogan, description, category, default_price From Product where product_id >= ${
+            count * page - count + 1
+          } and Product_id <= ${count * page};`
+        )
+        .then((info) => {
+          res.send(info);
+          conn.end();
+        })
+        .catch((err) => {
+          console.log(err);
+          res.sendStatus(500);
+          conn.end();
+        });
+    });
   },
 
   getIndividualProduct: (req, res) => {
-    pool
-      .getConnection()
-      .then((conn) => {
-        return conn
-          .query(
-            `SELECT product_id AS id, name, slogan, description, category, default_price From Product WHERE Product.product_id = ${req.params.product_id}`
-          )
-          .then((product) => {
-            return conn
-              .query(
-                `SELECT Features.feature, Features.value FROM Product INNER JOIN Features ON Product.product_id = Features.product_id WHERE Product.product_id = ${req.params.product_id}`
-              )
-              .then((features) => {
-                product[0].features = features;
-                return product[0];
-              });
-          })
-          .then((info) => {
-            res.send(info);
-            conn.end();
-          });
-      })
-
-      .catch((err) => {
-        console.log('this is an error', err);
-        res.sendStatus(500);
-      });
+    pool.getConnection().then((conn) => {
+      return conn
+        .query(
+          `SELECT product_id AS id, name, slogan, description, category, default_price From Product WHERE Product.product_id = ${req.params.product_id}`
+        )
+        .then((product) => {
+          return conn
+            .query(
+              `SELECT Features.feature, Features.value FROM Product INNER JOIN Features ON Product.product_id = Features.product_id WHERE Product.product_id = ${req.params.product_id}`
+            )
+            .then((features) => {
+              product[0].features = features;
+              return product[0];
+            });
+        })
+        .then((info) => {
+          res.send(info);
+          conn.end();
+        })
+        .catch((err) => {
+          console.log('this is an error', err);
+          res.sendStatus(404);
+          conn.end();
+        });
+    });
   },
 
   getRelatedProducts: (req, res) => {

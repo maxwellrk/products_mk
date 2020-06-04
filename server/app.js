@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const port = process.env.PORT || 43443;
-const path = require('path');
+require('dotenv').config();
+
 const {
   getProductList,
   getIndividualProduct,
@@ -22,8 +22,10 @@ app.get('/products/:product_id/related', getRelatedProducts);
 
 app.get('/products/:product_id/styles', getProductStyles);
 
-app.listen(port, () =>
-  console.log(`Example app listening at http://localhost:${port}`)
-);
+app.listen(process.env.PORT || 43443, () => {
+  console.log(
+    `Example app listening at http://localhost:${process.env.PORT || 43443}`
+  );
+});
 
 module.exports = app;
