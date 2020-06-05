@@ -4,4 +4,4 @@ services:
   server:
     build: .
     ports:
-      - '43443:80'
+      - '43443:43443'
