@@ -8,6 +8,7 @@ const {
   getIndividualProduct,
   getRelatedProducts,
   getProductStyles,
+  serveTestingFile,
 } = require('./controllers');
 
 app.use(cors());
@@ -21,6 +22,8 @@ app.get('/products/:product_id', getIndividualProduct);
 app.get('/products/:product_id/related', getRelatedProducts);
 
 app.get('/products/:product_id/styles', getProductStyles);
+
+app.get('/loaderio-d7fc4286634d168b5fc712d67970839e.txt', serveTestingFile);
 
 app.listen(process.env.PORT || 43443, () => {
   console.log(

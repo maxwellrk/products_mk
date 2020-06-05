@@ -1,4 +1,5 @@
 const mariadb = require('mariadb');
+const path = require('path');
 
 module.exports = {
   getProductList: (req, res) => {
@@ -200,5 +201,10 @@ module.exports = {
             conn.end();
           });
       });
+  },
+  serveTestingFile: (req, res) => {
+    res.sendFile(
+      path.join(__dirname, '../loaderio-d7fc4286634d168b5fc712d67970839e.txt')
+    );
   },
 };
