@@ -81,99 +81,75 @@ module.exports = {
   },
 
   getProductStyles: (req, res) => {
-    pool.getConnection().then((conn) => {
-      return conn
-        .query(
-          `SELECT style_id, name, original_price, sale_price, default_status AS 'default?' FROM Styles WHERE Styles.product_id = ${req.params.product_id}`
-        )
-        .then((info) => {
-          let queryParams = '';
-          const positionOfStyles = {};
-          info.forEach((ele, index) => {
-            positionOfStyles[ele.style_id] = index;
-            index === 0
-              ? (queryParams += `p.style_id = ${ele.style_id}`)
-              : (queryParams += ` or p.style_id = ${ele.style_id}`);
-          });
+    pool
+      .getConnection()
+      .then((conn) => {
+        return conn
+          .query(
+            `select p.product_id, p.description, p.default_price,
+          s.style_id, s.name, s.sale_price, s.original_price, s.default_status as 'default?',
+          ph.thumb_url as url, ph.url as thumbnail_url, sk.size, sk.quantity 
+          from Product p join Styles s on p.product_id = s.product_id 
+          join Photos ph on ph.style_id = s.style_id
+          join Skus sk on sk.style_id = s.style_id 
+          where p.product_id = ${req.params.product_id};`
+          )
+          .then((results) => {
+            let returnObj = {};
+            let subObj = {};
+            let usedPhotos = {};
 
-          return conn
-            .query(
-              `SELECT style_id, thumb_url as thumbnail_url, url FROM Photos p WHERE ${queryParams}`
-            )
-            .then((photos) => {
-              return conn
-                .query(
-                  `SELECT style_id, size, quantity FROM Skus p WHERE ${queryParams}`
-                )
-                .then((skus) => {
-                  const returnObj = {};
-
-                  returnObj.product_id = req.params.product_id;
-
-                  returnObj.results = info;
-
-                  photos.forEach((ele) => {
-                    returnObj.results[positionOfStyles[ele.style_id]].photos ===
-                    undefined
-                      ? (returnObj.results[
-                          positionOfStyles[ele.style_id]
-                        ].photos = [
-                          {
-                            thumbnail_url: ele.url,
-                            url: ele.thumbnail_url,
-                          },
-                        ])
-                      : returnObj.results[
-                          positionOfStyles[ele.style_id]
-                        ].photos.push({
-                          //somehow these got mixed up need to fix it
-                          thumbnail_url: ele.url,
-                          url: ele.thumbnail_url,
-                        });
+            results.forEach((ele) => {
+              if (subObj[ele.style_id] === undefined) {
+                subObj[ele.style_id] = {
+                  style_id: ele.style_id,
+                  name: ele.name,
+                  original_price: ele.original_price,
+                  sale_price: ele.sale_price,
+                  'default?': ele['default?'],
+                  photos: [
+                    { url: ele.url, thumbnail_url: ele.thumbnail_url },
+                  ] || [
+                    {
+                      thumbnail_url: null,
+                      url: null,
+                    },
+                  ],
+                  skus: {
+                    [ele.size]: ele.quantity,
+                  } || {
+                    [ele.skus]: {
+                      null: null,
+                    },
+                  },
+                };
+                usedPhotos[ele.url + ele.style_id] = true;
+                usedPhotos[ele.thumbnail_url + ele.style_id] = true;
+              } else {
+                if (
+                  usedPhotos[ele.url + ele.style_id] !== true &&
+                  usedPhotos[ele.thumbnail_url + ele.style_id] !== true
+                ) {
+                  subObj[ele.style_id].photos.push({
+                    url: ele.url,
+                    thumbnail_url: ele.thumbnail_url,
                   });
-
-                  skus.forEach((ele) => {
-                    returnObj.results[positionOfStyles[ele.style_id]].skus ===
-                    undefined
-                      ? (returnObj.results[
-                          positionOfStyles[ele.style_id]
-                        ].skus = { [ele.size]: ele.quantity })
-                      : (returnObj.results[positionOfStyles[ele.style_id]].skus[
-                          ele.size
-                        ] = ele.quantity);
-                  });
-
-                  returnObj.results.forEach((ele) => {
-                    if (ele.photos === undefined) {
-                      ele.photos = [
-                        {
-                          thumbnail_url: null,
-                          url: null,
-                        },
-                      ];
-                    }
-
-                    if (ele.skus === undefined) {
-                      ele.skus = {
-                        null: null,
-                      };
-                    }
-                  });
-
-                  return returnObj;
-                });
-            })
-            .then((info) => {
-              res.send(info);
-              conn.end();
+                  usedPhotos[ele.url + ele.style_id] = true;
+                  usedPhotos[ele.thumbnail_url + ele.style_id] = true;
+                }
+                subObj[ele.style_id].skus[ele.size] = ele.quantity;
+              }
             });
-        })
-        .catch((err) => {
-          console.log('error caught', err);
-          res.send({ product_id: req.params.product_id, results: [] });
-          conn.end();
-        });
-    });
+            returnObj.product_id = req.params.product_id;
+            returnObj.results = Object.keys(subObj).map((ele) => subObj[ele]);
+            res.send(returnObj);
+            conn.end();
+          });
+      })
+      .catch((err) => {
+        console.log('error caught', err);
+        res.send({ product_id: req.params.product_id, results: [] });
+      });
   },
   serveTestingFile: (req, res) => {
     res.sendFile(
