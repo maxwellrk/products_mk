@@ -81,79 +81,78 @@ module.exports = {
   },
 
   getProductStyles: (req, res) => {
-    pool
-      .getConnection()
-      .then((conn) => {
-        return conn
-          .query(
-            `select p.product_id, p.description, p.default_price,
+    pool.getConnection().then((conn) => {
+      return conn
+        .query(
+          `select p.product_id, p.description, p.default_price,
           s.style_id, s.name, s.sale_price, s.original_price, s.default_status as 'default?',
           ph.thumb_url as url, ph.url as thumbnail_url, sk.size, sk.quantity 
           from Product p join Styles s on p.product_id = s.product_id 
           join Photos ph on ph.style_id = s.style_id
           join Skus sk on sk.style_id = s.style_id 
           where p.product_id = ${req.params.product_id};`
-          )
-          .then((results) => {
-            let returnObj = {};
-            let subObj = {};
-            let usedPhotos = {};
+        )
+        .then((results) => {
+          let returnObj = {};
+          let subObj = {};
+          let usedPhotos = {};
 
-            results.forEach((ele) => {
-              if (subObj[ele.style_id] === undefined) {
-                subObj[ele.style_id] = {
-                  style_id: ele.style_id,
-                  name: ele.name,
-                  original_price: ele.original_price,
-                  sale_price: ele.sale_price,
-                  'default?': ele['default?'],
-                  photos: [
-                    { url: ele.url, thumbnail_url: ele.thumbnail_url },
-                  ] || [
-                    {
-                      thumbnail_url: null,
-                      url: null,
-                    },
-                  ],
-                  skus: {
-                    [ele.size]: ele.quantity,
-                  } || {
-                    [ele.skus]: {
-                      null: null,
-                    },
+          results.forEach((ele) => {
+            if (subObj[ele.style_id] === undefined) {
+              subObj[ele.style_id] = {
+                style_id: ele.style_id,
+                name: ele.name,
+                original_price: ele.original_price,
+                sale_price: ele.sale_price,
+                'default?': ele['default?'],
+                photos: [
+                  { url: ele.url, thumbnail_url: ele.thumbnail_url },
+                ] || [
+                  {
+                    thumbnail_url: null,
+                    url: null,
                   },
-                };
+                ],
+                skus: {
+                  [ele.size]: ele.quantity,
+                } || {
+                  [ele.skus]: {
+                    null: null,
+                  },
+                },
+              };
+              usedPhotos[ele.url + ele.style_id] = true;
+              usedPhotos[ele.thumbnail_url + ele.style_id] = true;
+            } else {
+              if (
+                usedPhotos[ele.url + ele.style_id] !== true &&
+                usedPhotos[ele.thumbnail_url + ele.style_id] !== true
+              ) {
+                subObj[ele.style_id].photos.push({
+                  url: ele.url,
+                  thumbnail_url: ele.thumbnail_url,
+                });
                 usedPhotos[ele.url + ele.style_id] = true;
                 usedPhotos[ele.thumbnail_url + ele.style_id] = true;
-              } else {
-                if (
-                  usedPhotos[ele.url + ele.style_id] !== true &&
-                  usedPhotos[ele.thumbnail_url + ele.style_id] !== true
-                ) {
-                  subObj[ele.style_id].photos.push({
-                    url: ele.url,
-                    thumbnail_url: ele.thumbnail_url,
-                  });
-                  usedPhotos[ele.url + ele.style_id] = true;
-                  usedPhotos[ele.thumbnail_url + ele.style_id] = true;
-                }
-                subObj[ele.style_id].skus[ele.size] = ele.quantity;
               }
-            });
-            returnObj.product_id = req.params.product_id;
-            returnObj.results = Object.keys(subObj).map((ele) => subObj[ele]);
-            res.send(returnObj);
-            conn.end();
+              subObj[ele.style_id].skus[ele.size] = ele.quantity;
+            }
           });
-      })
-      .catch((err) => {
-        console.log('error caught', err);
-        res.send({ product_id: req.params.product_id, results: [] });
-      });
+          returnObj.product_id = req.params.product_id;
+          returnObj.results = Object.keys(subObj).map((ele) => subObj[ele]);
+          res.send(returnObj);
+          conn.end();
+        })
+        .catch((err) => {
+          console.log('error caught', err);
+          res.send({ product_id: req.params.product_id, results: [] });
+          conn.end();
+        });
+    });
   },
   serveTestingFile: (req, res) => {
     res.sendFile(
-      path.join(__dirname, '../loaderio-d7fc4286634d168b5fc712d67970839e.txt')
+      path.join(__dirname, '../loaderio-c7146d4b885c425035dc77e6d7ef83d9.txt')
     );
   },
 };
