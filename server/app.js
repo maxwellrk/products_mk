@@ -23,7 +23,7 @@ app.get('/products/:product_id/related', getRelatedProducts);
 
 app.get('/products/:product_id/styles', getProductStyles);
 
-app.get('/loaderio-d7fc4286634d168b5fc712d67970839e.txt', serveTestingFile);
+app.get('/loaderio-c7146d4b885c425035dc77e6d7ef83d9.txt', serveTestingFile);
 
 app.listen(process.env.PORT || 43443, () => {
   console.log(
